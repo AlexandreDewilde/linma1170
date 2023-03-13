@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "matrix.h": "c",
+        "rmck.h": "c",
+        "stdio.h": "c",
+        "elasticity.h": "c",
+        "*.tcc": "c",
+        "vector": "c",
+        "functional": "c",
+        "random": "c"
+    }
+}
