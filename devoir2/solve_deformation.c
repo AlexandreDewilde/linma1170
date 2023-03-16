@@ -2,9 +2,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmshc.h>
+#include <time.h>
 #include "datastructures/headers/matrix.h"
 #include "headers/elasticity.h"
 #include "headers/lu.h"
+
+// base on this SO post https://stackoverflow.com/questions/3557221/how-do-i-measure-time-in-c
+double get_time()
+{
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    return now.tv_sec + now.tv_nsec*1e-9;
+}
 
 int main (int argc, char *argv[]) {
 
@@ -41,6 +50,7 @@ int main (int argc, char *argv[]) {
 
 	// Build matrix
 	int *perm = malloc(2*n_nodes*sizeof(int));
+	for (int i = 0; i < 2*n_nodes; i++) perm[i] = i;
 	compute_permutation(perm, coord, n_nodes, triplets, n_triplets);
 	int *match_perm = malloc(2*n_nodes*sizeof(int));
 	for (int i = 0; i < 2*n_nodes; i++) {
@@ -51,7 +61,7 @@ int main (int argc, char *argv[]) {
 	int bandwidth = 0;
 
 	for (int t=0; t<n_triplets; t++){
-		K->a[match_perm[triplets[t].i]][match_perm[triplets[t].j]] += triplets[t].val;
+		// K->a[match_perm[triplets[t].i]][match_perm[triplets[t].j]] += triplets[t].val;
 		int current_band = match_perm[triplets[t].i] - match_perm[triplets[t].j];
 		if (current_band < 0) current_band = -current_band;
 		if (current_band > bandwidth) bandwidth = current_band;
@@ -75,13 +85,29 @@ int main (int argc, char *argv[]) {
 	// print_matrix(K);
 
 	// Solve linear system
-	lu(K);
-	solve(K, RHS_perm);
+	// double start = get_time();
+	// lu(K);
+	// double end = get_time();
+	// double diff = end - start;
+	// printf("lu\t%lf\n",diff);
+	// start = get_time();
+	// solve(K, RHS_perm);
+	// end = get_time();
+	// diff = end - start;
+	// printf("solve\t%lf\n",diff);
 
-	print_matrix(K);
+	// print_matrix(K);
 
-	// lu_band(band_matrix);
-	// solve_band(band_matrix, RHS_perm);
+	double start = get_time();
+	lu_band(band_matrix);
+	double end = get_time();
+	double diff = end - start;
+	printf("lu_band\t%lf\n",diff);
+	start = get_time();
+	solve_band(band_matrix, RHS_perm);
+	end = get_time();
+	diff = end - start;
+	printf("solve_band\t%lf\n",diff);
 
 	for (int i = 0; i < 2*n_nodes; i++) {
 		RHS[i] = RHS_perm[match_perm[i]];
@@ -90,10 +116,10 @@ int main (int argc, char *argv[]) {
 	visualize_in_gmsh(RHS, gmsh_num, n_nodes);
 
 	// // Run the Gmsh GUI; Comment this line if you do not want the Gmsh window to launch
-	// gmshFltkRun(&ierr);
+	gmshFltkRun(&ierr);
 	
 	// Free stuff
-	// free_band_matrix(band_matrix);
+	free_band_matrix(band_matrix);
 	free(perm);
 	free(match_perm);
 	free(RHS_perm);
@@ -101,7 +127,7 @@ int main (int argc, char *argv[]) {
 	free(gmsh_num);
 	free(coord);
 	free(triplets);
-	free_matrix(K);
+	// free_matrix(K);
 	gmshFinalize(&ierr);
 	return 0;
 }

@@ -5,8 +5,8 @@ import seaborn as sns
 
 sns.set_style()
 
-K = np.loadtxt("K_sorted.csv", skiprows=12)
-lu = np.loadtxt("LU_sorted.csv", skiprows=12)
+K = np.loadtxt("K_perm.csv", skiprows=12)
+lu = np.loadtxt("LU_perm.csv", skiprows=12)
 # print(sc.linalg.bandwidth(K), sc.linalg.bandwidth(lu))
 plt.spy(K)
 plt.show()
