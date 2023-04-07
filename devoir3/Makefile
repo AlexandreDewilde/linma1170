@@ -46,10 +46,10 @@ all: $(PROG)
 $(PROG): solve_eigenmodes.c $(SRCS)
 	@$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^
 
-test_convergence: test_convergence.c functions/power_method.c functions/rayleigh_quotient.c functions/matrix.c functions/lu.c functions/rmck.c functions/vector.c
+test_convergence: test_convergence.c $(SRCS)
 	@$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^
 
-test_hybrid: test_hybrid.c functions/power_method.c functions/rayleigh_quotient.c functions/matrix.c functions/lu.c functions/rmck.c functions/vector.c
+test_hybrid: test_hybrid.c $(SRCS)
 	@$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^
 	
 test_inversion: test_inversion.c $(SRCS)
@@ -60,3 +60,4 @@ clean:
 	rm -f solve_eigenmodes
 	rm -f test_convergence
 	rm -f test_inversion
+	rm -f test_hybrid

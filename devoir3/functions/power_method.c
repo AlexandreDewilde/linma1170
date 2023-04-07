@@ -37,7 +37,7 @@ int power_iteration(Matrix *A, double *lambda, double *vec, double eps) {
             den += vec[i]*vec[i];
         }
         *lambda /= den;
-        if (fabs((*lambda)-prev_lambda) < eps) {
+        if (fabs((*lambda)-prev_lambda)/ fabs(*lambda) < eps) {
             // printf("Power Method, number of iterations to converge : %d\n", it+1);
             return it + 1;
         }

@@ -40,7 +40,7 @@ int rayleigh_quotient_iteration(Matrix *A, double *lambda, double *vec, double e
         for (int i = 0; i < A->m; i++) vec[i] /= sum;
         double prev_lambda = *lambda;
         *lambda = mult(A, vec);
-        if (fabs(*lambda - prev_lambda) < eps) {
+        if (fabs(*lambda - prev_lambda) / fabs(*lambda) < eps) {
             // printf("Rayleigh quotient iteration, number of iterations to converge : %d\n", it+1);
             return it+1;
         }

@@ -92,7 +92,6 @@ int main (int argc, char *argv[]){
         set_vector(vec, KM->m);
         double lambda = 0.;
         power_iteration(KM, &lambda, vec, 1e-20);
-        // rayleigh_quotient_iteration(KM, &lambda, vec);
         eigen_values[it] = lambda;
         
         // Deflation matrix A = A - lambda * uu^t
@@ -122,7 +121,7 @@ int main (int argc, char *argv[]){
         visualize_in_gmsh(vec_zeros, matrix_size/2);
     }
    
-    gmshFltkRun(&ierr);
+    // gmshFltkRun(&ierr);
     free(vec);
     free(vec_zeros);
     free_matrix(KM);
@@ -134,8 +133,11 @@ int main (int argc, char *argv[]){
     if (f == NULL) {
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < k; i++) {
-        fprintf(f, "%lf ", 1/sqrt(eigen_values[i])/2/PI);
+    for (int i = 0; i < k-1; i++) {
+        fprintf(f, "%.20f ", 1/sqrt(eigen_values[i])/2/PI);
+    }
+    if (k) {
+        fprintf(f, "%.20f", 1/sqrt(eigen_values[k-1])/2/PI);
     }
     fclose(f);
     
