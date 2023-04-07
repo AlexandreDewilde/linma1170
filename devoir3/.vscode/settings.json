@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "rmck.h": "c",
+        "elasticity.h": "c",
+        "matrix.h": "c",
+        "power_method.h": "c",
+        "rayleigh_quotient.h": "c",
+        "lu.h": "c"
+    }
+}
