@@ -64,9 +64,15 @@ int main (int argc, char *argv[]){
     size_t n_boundary_nodes;
     assemble_system(&K, &M, &boundary_nodes, &n_boundary_nodes, &coord, E, nu, rho);
     size_t matrix_size = K->m;
+    
+
+    char *boundary_bool = calloc(K->m/2, 1);
+    for (int i = 0; i < n_boundary_nodes; ++i) {
+        boundary_bool[boundary_nodes[i]] = 1;
+    }
 
     // 1. Remove lines from matrix that correspond to boundary nodes
-    reduce_matrix(&K, &M, boundary_nodes, n_boundary_nodes);
+    reduce_matrix(&K, &M, boundary_bool, n_boundary_nodes);
 
     // print_matrix(M);
     // K^-1
@@ -104,13 +110,7 @@ int main (int argc, char *argv[]){
         // Recreate base vector
         int current = 0;
         for (int i = 0; i < matrix_size; i++) {
-            int skip = 0;
-            for (int j = 0; j < n_boundary_nodes; j++) {
-                if (boundary_nodes[j] == i/2) {
-                    skip = 1; break;
-                }
-            }
-            if (skip) {
+            if (boundary_bool[i/2]) {
                 vec_zeros[i] = 0.;
             }
             else {
@@ -125,6 +125,7 @@ int main (int argc, char *argv[]){
     free(vec);
     free(vec_zeros);
     free_matrix(KM);
+    free(boundary_bool);
     free(boundary_nodes);
     free(coord);
 

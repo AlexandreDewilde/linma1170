@@ -6,7 +6,7 @@ GMSH_DIR := ../gmsh-sdk
 CC := gcc
 
 # Flags de compilation ; vous pouvez ajouter d'autres flags si vous le souhaitez
-CFLAGS := -Wall
+CFLAGS := -Wall -O3
 
 # Chemins vers les dossiers `include` où se trouvent les headers externes
 # on donne le chemin vers le dossier `include` du SDK

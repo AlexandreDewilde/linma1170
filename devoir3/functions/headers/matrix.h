@@ -42,6 +42,6 @@ Matrix *mult_matrix(Matrix *A, Matrix *B);
 
 Matrix *inverse_matrix_permute(Matrix *A);
 
-void reduce_matrix(Matrix **K, Matrix **M, size_t *boundary_nodes, size_t n_boundary_nodes);
+void reduce_matrix(Matrix **K, Matrix **M, char *boundary_bool, size_t n_boundary_nodes);
 
 #endif

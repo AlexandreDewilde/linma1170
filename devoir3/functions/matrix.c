@@ -148,30 +148,17 @@ Matrix *mult_matrix(Matrix *A, Matrix *B) {
 }
 
 
-void reduce_matrix(Matrix **K, Matrix **M, size_t *boundary_nodes, size_t n_boundary_nodes) {
+void reduce_matrix(Matrix **K, Matrix **M, char *boundary_bool, size_t n_boundary_nodes) {
+
     size_t new_size = (*K)->m - 2*n_boundary_nodes;
     Matrix *K_reduced = allocate_matrix(new_size, new_size);
     Matrix *M_reduced = allocate_matrix(new_size, new_size);
     int current_row = 0;
     for (int i = 0; i < (*K)->m; i++) {
-        int skip = 0;
-        for (int j = 0; j < n_boundary_nodes; j++) {
-            if (boundary_nodes[j] == i/2) {
-                skip = 1;
-                break;
-            }
-        }
-        if (skip) continue;
+        if (boundary_bool[i/2]) continue;
         int current_col = 0;
         for (int j = 0; j < (*K)->m; j++) {
-            skip = 0;
-            for (int k = 0; k < n_boundary_nodes; k++) {
-                if (boundary_nodes[k] == j/2) {
-                    skip = 1;
-                    break;
-                }
-            }
-            if (skip) continue;
+            if (boundary_bool[j/2]) continue;
             K_reduced->a[current_row][current_col] = (*K)->a[i][j];
             M_reduced->a[current_row][current_col] = (*M)->a[i][j];
             ++current_col;
