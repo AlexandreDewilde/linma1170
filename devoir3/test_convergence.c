@@ -39,8 +39,13 @@ int main(int argc, char *argv[]) {
         assemble_system(&K, &M, &boundary_nodes, &n_boundary_nodes, &coord, E, nu, rho);
         size_t matrix_size = K->m;
 
-        // 1. Remove lines from matrix that correspond to boundary nodes
-        reduce_matrix(&K, &M, boundary_nodes, n_boundary_nodes);
+        char *boundary_bool = calloc(K->m/2, 1);
+        for (int i = 0; i < n_boundary_nodes; ++i) {
+            boundary_bool[boundary_nodes[i]] = 1;
+        }
+
+        reduce_matrix(&K, &M, boundary_bool, n_boundary_nodes);
+        free(boundary_bool);
 
         // print_matrix(M);
         // K^-1
