@@ -1,0 +1,19 @@
+{
+    "files.associations": {
+        "cblas.h": "c",
+        "math.h": "c",
+        "matrix.h": "c",
+        "string.h": "c",
+        "random": "c",
+        "vector.h": "c",
+        "rmck.h": "c",
+        "lapacke.h": "c",
+        "hash_map": "c",
+        "*.tcc": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "unordered_set": "c",
+        "string_view": "c",
+        "array": "c"
+    }
+}
