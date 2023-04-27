@@ -21,21 +21,20 @@
        __typeof__ (b) _b = (b); \
      _a < _b ? _a : _b; })
 
-#define MESHSIZE 0.3
+#define MESHSIZE 0.2
 #define DELTA 0.00000001
-#define LR .000001
+#define LR .001
 #define FREQ 1567.98
 
 double E = 0.7e11;  // Young's modulus for Aluminum
 double nu = 0.3;    // Poisson coefficient
 double rho = 3000;  //
 
-void compute_gradient(double r1, double r2, double e, double l, double *gradient) {
-    designTuningFork(r1, r2, e, l, MESHSIZE, NULL);
+Matrix *compute_matrix(double r1, double r2, double e, double l, double factor[4])  {
     Matrix *K, *M;
-    size_t* boundary_nodes;
-    size_t n_boundary_nodes;
-    double * coord;
+    double *coord; size_t *boundary_nodes; size_t n_boundary_nodes;
+
+    designTuningFork(r1+factor[0], r2+factor[1], e+factor[2], l+factor[3], MESHSIZE, NULL);
     assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
 
     // Remove lines from matrix that are boundary
@@ -47,44 +46,48 @@ void compute_gradient(double r1, double r2, double e, double l, double *gradient
     inverse_matrix_permute(K_new, M_new);
     Matrix *A = M_new;
     free_matrix(K_new); K_new = NULL;
+    return A;
+}
+
+void compute_gradient(double r1, double r2, double e, double l, double *gradient) {
+    double factor[4] = {0.,0.,0.,0.};
+    Matrix *A = compute_matrix(r1, r2, e, l, factor);
 
     double v[A->m];
     double lambda = power_iteration(A, v);
-
-    free_matrix(M_new); M_new = NULL;
-    double factor[4] = {0.,0.,0.,0.};
+    for(int i = 0; i < A->m; i++)
+      for(int j = 0; j < A->n; j++)
+        A->a[i][j] -= lambda * v[i] * v[j];
+    lambda = power_iteration(A, v);
+    free_matrix(A); A = NULL;
+    
     double freq = 1./(2*M_PI*sqrt(lambda));
     printf("%lf %lf\n", freq, FREQ);
     for (int i = 0; i < 4; i++) {
-        factor[i] = DELTA;
-        Matrix *K, *M;
-        // int err;
-        // gmshInitialize(0, NULL, 0, 0, &err);
-        designTuningFork(r1+factor[0], r2+factor[1], e+factor[2], l+factor[3], MESHSIZE, NULL);
-        assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
-
-        // Remove lines from matrix that are boundary
-        Matrix *K_new;
-        Matrix *M_new;
-        remove_bnd_lines(K, M, boundary_nodes, n_boundary_nodes, &K_new, &M_new, NULL);
-        free_matrix(K); free_matrix(M); K = M = NULL;
-        
-        inverse_matrix_permute(K_new, M_new);
-        Matrix *A = M_new;
-        free_matrix(K_new); K_new = NULL;
-
-        double v[A->m];
-        double lambda_eps = power_iteration(A, v);
-        gradient[i] = 2.*(freq -  FREQ) * (lambda - lambda_eps) / DELTA;
-        free_matrix(M_new); M_new = NULL;
-        factor[i] = 0.;
+        double lambda[2];
+        for (int j = 0; j < 2; j++) {
+            double fact = j;
+            if (j == 2) fact = -1.;
+            factor[i] = DELTA*fact;
+            A = compute_matrix(r1, r2, e, l, factor);
+            double v[A->m];
+            for (int k = 0; k < 2; k++) {
+                lambda[j] = power_iteration(A, v);
+                for(int i = 0; i < A->m; i++)
+                    for(int j = 0; j < A->n; j++)
+                        A->a[i][j] -= lambda[j] * v[i] * v[j];
+            }
+            free_matrix(A); A = NULL;
+            factor[i] = 0.;
+        }
+        gradient[i] = (freq -  FREQ) * (lambda[1] - lambda[0]) / DELTA;
     }
 }
 
 int main (int argc, char *argv[]) {
     int ierr;
     gmshInitialize(argc, argv, 0, 0, &ierr);
-    double params[4] = {0.001851, 0.022364, 0.038419, 0.076507};
+    double params[4] = {0.004112, 0.022369, 0.038419, 0.076508};
     printf("%lf, %lf, %lf, %lf\n", params[0], params[1], params[2], params[3]);
     for (int it = 0; it < 1000; it++) {
         double gradient[4];
