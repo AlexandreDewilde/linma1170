@@ -22,8 +22,8 @@
      _a < _b ? _a : _b; })
 
 #define MESHSIZE 0.2
-#define DELTA 0.00000001
-#define LR .001
+#define DELTA 0.000001
+#define LR .1
 #define FREQ 1567.98
 
 double E = 0.7e11;  // Young's modulus for Aluminum
@@ -54,33 +54,40 @@ void compute_gradient(double r1, double r2, double e, double l, double *gradient
     Matrix *A = compute_matrix(r1, r2, e, l, factor);
 
     double v[A->m];
-    double lambda = power_iteration(A, v);
-    for(int i = 0; i < A->m; i++)
-      for(int j = 0; j < A->n; j++)
-        A->a[i][j] -= lambda * v[i] * v[j];
-    lambda = power_iteration(A, v);
+    double lambda[4];
+    for (int k = 0; k < 4; k++) {
+        lambda[k] = power_iteration(A, v);
+        for(int i = 0; i < A->m; i++)
+            for(int j = 0; j < A->n; j++)
+                A->a[i][j] -= lambda[k] * v[i] * v[j];
+
+    }
     free_matrix(A); A = NULL;
     
-    double freq = 1./(2*M_PI*sqrt(lambda));
-    printf("%lf %lf\n", freq, FREQ);
+    double freq = 1./(2*M_PI*sqrt(lambda[1]));
+    double freq2 = 1./(2*M_PI*sqrt(lambda[3]));
+    printf("%lf %lf %lf %lf\n", freq, FREQ, freq2, 2*FREQ);
     for (int i = 0; i < 4; i++) {
-        double lambda[2];
+        double lambda[2][4];
         for (int j = 0; j < 2; j++) {
             double fact = j;
             if (j == 2) fact = -1.;
             factor[i] = DELTA*fact;
             A = compute_matrix(r1, r2, e, l, factor);
             double v[A->m];
-            for (int k = 0; k < 2; k++) {
-                lambda[j] = power_iteration(A, v);
-                for(int i = 0; i < A->m; i++)
-                    for(int j = 0; j < A->n; j++)
-                        A->a[i][j] -= lambda[j] * v[i] * v[j];
+            for (int k = 0; k < 4; k++) {
+                lambda[j][k] = power_iteration(A, v);
+                for(int ii = 0; ii < A->m; ii++)
+                    for(int jj = 0; jj < A->n; jj++)
+                        A->a[ii][jj] -= lambda[j][k] * v[ii] * v[jj];
             }
             free_matrix(A); A = NULL;
             factor[i] = 0.;
         }
-        gradient[i] = (freq -  FREQ) * (lambda[1] - lambda[0]) / DELTA;
+        // double f1 = 1./(2*M_PI*sqrt(lambda[1][1]));
+        // double f2 = 1./(2*M_PI*sqrt(lambda[0][1]));
+        // gradient[i] = (fabs(f1 - FREQ) - fabs(f2 - FREQ)) / 2 / DELTA;
+        gradient[i] = (freq -  FREQ) * (lambda[1][1] - lambda[0][1]) / 2 / DELTA; // + (freq2-2*FREQ) * (lambda[1][3] - lambda[0][3]) / 2 / DELTA;
     }
 }
 
@@ -93,9 +100,10 @@ int main (int argc, char *argv[]) {
         double gradient[4];
         compute_gradient(params[0], params[1], params[2], params[3], gradient);
         for (int i = 0; i < 4; i++) {
+            
             params[i] = params[i] - LR * gradient[i];
         }
-        // printf("%lf, %lf, %lf, %lf\n", gradient[0], gradient[1], gradient[2], gradient[3]);
+        printf("%lf, %lf, %lf, %lf\n", gradient[0], gradient[1], gradient[2], gradient[3]);
         printf("%lf, %lf, %lf, %lf\n", params[0], params[1], params[2], params[3]);
     }
     printf("%lf, %lf, %lf, %lf\n", params[0], params[1], params[2], params[3]);

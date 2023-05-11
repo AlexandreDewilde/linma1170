@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <gmshc.h>
+#include <errno.h>
 
 void designTuningFork(double r1, double r2, double e, double l, double meshSizeFactor, char * filename) {
   /**
@@ -99,4 +100,68 @@ void designTuningFork(double r1, double r2, double e, double l, double meshSizeF
   gmshModelMeshGenerate(2, &ierr);
 
   if(filename != NULL) gmshWrite(filename, &ierr);
+}
+
+void designTuningForkSymmetric(double r1, double r2, double e, double l, double meshSizeFactor, char * filename) {
+  int ierr;
+
+  gmshClear(&ierr);
+
+  double h = r2 - r1; // width of prongs
+  double meshSize = h * meshSizeFactor;
+
+  // Add points
+  double x = 0;
+  double y = 0;
+  double z = 0;
+  gmshModelOccAddPoint(x,y,z,meshSize,1,&ierr);
+  x += h/2;
+  gmshModelOccAddPoint(x,y,z,meshSize,2,&ierr);
+  y += e;
+  gmshModelOccAddPoint(x,y,z,meshSize,3,&ierr);
+  x += r2;
+  y += r2;
+  gmshModelOccAddPoint(x,y,z,meshSize,4,&ierr);
+  y += l;
+  gmshModelOccAddPoint(x,y,z,meshSize,5,&ierr);
+  x -= h;
+  gmshModelOccAddPoint(x,y,z,meshSize,6,&ierr);
+  y -= l;
+  gmshModelOccAddPoint(x,y,z,meshSize,7,&ierr);
+  x -= r1;
+  y -= r1;
+  gmshModelOccAddPoint(x,y,z,meshSize,8,&ierr);
+  x -= h/2;
+  gmshModelOccAddPoint(x,y,z,meshSize,9,&ierr);
+  x += h/2;
+  y += r1;
+  gmshModelOccAddPoint(x, y, z, meshSize, 11, &ierr);
+
+  gmshModelOccAddLine(1, 2, 1, &ierr);
+  gmshModelOccAddLine(2,3,2, &ierr);
+  // gmshModelOccAddLine(3, 4, -1, &ierr);
+  gmshModelOccAddCircleArc(3, 11, 4, 4, &ierr);
+  gmshModelOccAddLine(4, 5, 3, &ierr);
+  gmshModelOccAddLine(5, 6, 5, &ierr);
+  gmshModelOccAddLine(6, 7, 6, &ierr);
+  gmshModelOccAddLine(8, 9, 7, &ierr);
+  gmshModelOccAddCircleArc(7, 11, 8, 9, &ierr);
+  gmshModelOccAddLine(9, 1, 8, &ierr);
+  // gmshModelOccAddLine(7, 8, -1, &ierr);
+  gmshModelOccSynchronize(&ierr);
+
+  int curveTags[9] = {1,2,3,4,5,6,7,8, 9};
+  gmshModelOccAddWire(curveTags, 9, 1, 0, &ierr);
+  int wireTags[1] = {1};
+  gmshModelOccAddPlaneSurface(wireTags, 1, 100, &ierr);
+
+
+  // Create physical group for surface
+  int surfaceTags[1] = {100};
+  gmshModelAddPhysicalGroup(2, surfaceTags, 1, -1, "bulk", &ierr);
+
+  int clampedCurveTags[3] = {1, 2, 11};
+  gmshModelAddPhysicalGroup(1, clampedCurveTags, 3, -1, "clamped", &ierr);
+
+  gmshModelMeshGenerate(2, &ierr);
 }

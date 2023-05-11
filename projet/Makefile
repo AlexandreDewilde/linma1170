@@ -35,6 +35,15 @@ all: $(PROG)
 optimize: $(OBJS) optimize.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
+execute: $(OBJS) execute.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
+bisect: $(OBJS) bisect.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
+ternary_search: $(OBJS) ternary_search.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
 # Règle de compilation : on produit un .o à partir d'un .c
 # on fournit les flags de compilation CFLAGS et les chemins include INC_DIR
 # `$<` signifie: "la première dépendance" (le .c)
@@ -49,4 +58,6 @@ $(PROG): $(OBJS) project.o
 
 # Règle de nettoyage : supprime PROG et OBJS
 clean:
-	rm $(PROG) $(OBJS)
+	rm *.o -f
+	rm $(PROG) $(OBJS) -f
+	rm -f project.o project optimize optimize.o bisect execute ternary_search

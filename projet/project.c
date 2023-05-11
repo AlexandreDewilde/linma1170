@@ -44,7 +44,7 @@ int main (int argc, char *argv[]) {
   gmshInitialize(argc, argv, 0, 0, &ierr);
 
   
-  designTuningFork(0.001846, 0.022360, 0.038415, 0.076506, 0.3, NULL);
+  designTuningFork(6e-3, 11e-3, 38e-3, 0.038638, 0.2, NULL);
   
   // Number of vibration modes to find
   int k = atoi(argv[1]);
