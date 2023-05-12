@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <gmshc.h>
 #include "matrix.h"
 #include "elasticity.h"
@@ -21,7 +20,7 @@
 
 int main (int argc, char *argv[]) {
 
-  	if (argc < 2){
+  	if (argc < 2) {
 		printf("Usage: \n"
 		"./project <k> <out>\n" 
 		"---------------------------- \n\n"
@@ -45,9 +44,10 @@ int main (int argc, char *argv[]) {
 
 	// Create geometry
 	double const d[6] = {6e-3, 11e-3, 11e-3, 11e-3, 11e-3, 11e-3};
+	double dec[6] = {0, 0, 0, 0, 0, 0};
 	double const h[6] = {6e-3, 11e-3, 11e-3, 12e-3, 12e-3, 12e-3};
 	double const l[6] = {38e-3, 82e-3, 82e-3, 82e-3, 82e-3, 82e-3};
-	designTuningForkSymmetricNLayer(d, h, l, 3, 0.5, NULL);
+	designTuningForkSymmetricNLayer(18e-3, 6e-3, d, dec, h, l, 2, 0.3, NULL);
   
 	// Assemble the 2 matrices of the linear elasticity problem: 
 	// M is the mass matrix && K is the stiffness matrix
@@ -57,6 +57,8 @@ int main (int argc, char *argv[]) {
 	size_t n_boundary_nodes;
 	double* coord;
 	assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
+	free(coord);
+	coord = NULL;
 	size_t const m = K->m;
 
 	// Remove lines from matrix that are boundary
@@ -82,6 +84,7 @@ int main (int argc, char *argv[]) {
 	if (argc >= 3)
 		file = fopen(argv[2], "w"); // open file to write frequencies
 	
+	double* const freq_vector = calloc(m, sizeof(double));
 	for(size_t ki = 0; ki < k; ki++) {
 		lambda = power_iteration(A, v);
 		freq = 1. / (2 * M_PI *sqrt(lambda));
@@ -97,7 +100,6 @@ int main (int argc, char *argv[]) {
 				A->a[i][j] -= lambda * v[i] * v[j];
 
 		// Put appropriate BC and plot
-		double* const freq_vector = calloc(m, sizeof(double));
 		size_t iv = 0;
 		size_t i_bnd = 0; 
 		for(size_t i = 0; i < m/2; i++) {
@@ -105,7 +107,7 @@ int main (int argc, char *argv[]) {
 				i_bnd++;
 				continue;
 			}
-			freq_vector[2 * i + 0]   = v[2 * iv + 0];
+			freq_vector[2 * i + 0] = v[2 * iv + 0];
 			freq_vector[2 * i + 1] = v[2 * iv + 1];
 			iv++;
 		}
@@ -118,9 +120,9 @@ int main (int argc, char *argv[]) {
   	gmshFltkRun(&ierr);
 
 	// Don't need to free the os is faster...
-	// free_matrix(K_new);
+	// free(freq_vector);
 	// free_matrix(M_new);
 	// free(boundary_nodes);
-
-  return 0;
+	// free(v);
+  	return 0;
 }
