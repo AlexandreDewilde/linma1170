@@ -38,6 +38,9 @@ optimize: $(OBJS) optimize.o
 execute: $(OBJS) execute.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
+execute_2_layer: $(OBJS) execute_2_layer.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
 bisect: $(OBJS) bisect.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
@@ -60,4 +63,4 @@ $(PROG): $(OBJS) project.o
 clean:
 	rm *.o -f
 	rm $(PROG) $(OBJS) -f
-	rm -f project.o project optimize optimize.o bisect execute ternary_search
+	rm -f project.o project optimize optimize.o bisect execute ternary_search execute_2_layer

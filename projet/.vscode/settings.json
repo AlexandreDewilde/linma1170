@@ -14,6 +14,9 @@
         "unordered_map": "c",
         "unordered_set": "c",
         "string_view": "c",
-        "array": "c"
+        "array": "c",
+        "elasticity.h": "c",
+        "stdio.h": "c",
+        "stdlib.h": "c"
     }
 }

@@ -5,110 +5,122 @@
 #include "matrix.h"
 #include "elasticity.h"
 #include "math.h"
-#include "lu.h"
 #include "design.h"
 #include "eigen.h"
-#include "rmck.h"
-#include <lapacke.h> 
-#include <cblas.h>
 
- #define max(a,b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a > _b ? _a : _b; })
- #define min(a,b) \
-   ({ __typeof__ (a) _a = (a); \
-       __typeof__ (b) _b = (b); \
-     _a < _b ? _a : _b; })
+#define max(a,b) \
+   	({ __typeof__ (a) _a = (a); \
+		__typeof__ (b) _b = (b); \
+	_a > _b ? _a : _b; })
+
+#define min(a,b) \
+   	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+		_a < _b ? _a : _b; })
 
 
 int main (int argc, char *argv[]) {
 
-  if (argc < 2){
-    printf("Usage: \n"
-      "./project <k> <out>\n" 
-      "---------------------------- \n\n"
-      "- k is the number of frequencies to compute. \n "
-      "- out is the output file to write the frequencies. \n "
-      "\n");
-    return -1;
-  }
+  	if (argc < 2){
+		printf("Usage: \n"
+		"./project <k> <out>\n" 
+		"---------------------------- \n\n"
+		"- k is the number of frequencies to compute. \n "
+		"- out is the output file to write the frequencies. \n "
+		"\n");
+		return -1;
+  	}
 
-  // Define physical constants
-  double E = 0.7e11;  // Young's modulus for Aluminum
-  double nu = 0.3;    // Poisson coefficient
-  double rho = 3000;  // Density of Aluminum
+	// Number of vibration modes to find
+	size_t const k = atoi(argv[1]);
 
-  // Initialize Gmsh and create geometry
-  int ierr;
-  gmshInitialize(argc, argv, 0, 0, &ierr);
+	// Define physical constants
+	double const E = 0.7e11;  // Young's modulus for Aluminum
+	double const nu = 0.3;    // Poisson coefficient
+	double const rho = 3000;  // Density of Aluminum
 
+	// Initialize Gmsh and create geometry
+	int ierr;
+	gmshInitialize(argc, argv, 0, 0, &ierr);
+
+	// Create geometry
+	double const d[6] = {6e-3, 11e-3, 11e-3, 11e-3, 11e-3, 11e-3};
+	double const h[6] = {6e-3, 11e-3, 11e-3, 12e-3, 12e-3, 12e-3};
+	double const l[6] = {38e-3, 82e-3, 82e-3, 82e-3, 82e-3, 82e-3};
+	designTuningForkSymmetricNLayer(d, h, l, 3, 0.5, NULL);
   
-  designTuningFork(6e-3, 11e-3, 38e-3, 0.038638, 0.2, NULL);
+	// Assemble the 2 matrices of the linear elasticity problem: 
+	// M is the mass matrix && K is the stiffness matrix
+	Matrix* K;
+	Matrix* M;
+	size_t* boundary_nodes;
+	size_t n_boundary_nodes;
+	double* coord;
+	assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
+	size_t const m = K->m;
+
+	// Remove lines from matrix that are boundary
+	Matrix* K_new;
+	Matrix* M_new;
+	remove_bnd_lines(K, M, boundary_nodes, n_boundary_nodes, &K_new, &M_new, NULL);
+  	free_matrix(K);
+	free_matrix(M);
+	// Avoid dangling pointers
+	K = M = NULL;
   
-  // Number of vibration modes to find
-  int k = atoi(argv[1]);
+	inverse_matrix_permute(K_new, M_new);
+	Matrix* A = M_new;
+	free_matrix(K_new);
+	K_new = NULL;
 
-  // Assemble the 2 matrices of the linear elasticity problem: 
-  // M is the mass matrix
-  // K is the stiffness matrix
-  Matrix *K, *M;
-  size_t* boundary_nodes;
-  size_t n_boundary_nodes;
-  double * coord;
-  assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
+	// Power iteration + deflation to find k largest eigenvalues
+	double* const v = malloc(A->m * sizeof(double));
+	double lambda;
+	double freq;
 
-  // Remove lines from matrix that are boundary
-  Matrix *K_new;
-  Matrix *M_new;
-  remove_bnd_lines(K, M, boundary_nodes, n_boundary_nodes, &K_new, &M_new, NULL);
-  // free_matrix(K); free_matrix(M); K = M = NULL;
-  
-  inverse_matrix_permute(K_new, M_new);
-  Matrix *A = M_new;
-  free_matrix(K_new); K_new = NULL;
-  
+	FILE * file = NULL;
+	if (argc >= 3)
+		file = fopen(argv[2], "w"); // open file to write frequencies
+	
+	for(size_t ki = 0; ki < k; ki++) {
+		lambda = power_iteration(A, v);
+		freq = 1. / (2 * M_PI *sqrt(lambda));
+		
+		if (file != NULL)
+			fprintf(file, "%.9lf ", freq);
 
-  // Power iteration + deflation to find k largest eigenvalues
-  double * v = malloc(A->m * sizeof(double));
-  double lambda, freq;
-  FILE * file = fopen(argv[2], "w"); // open file to write frequencies
-  for(int ki = 0; ki < k; ki++) {
-    lambda = power_iteration(A, v);
-    freq = 1./(2*M_PI*sqrt(lambda));
+		printf("lambda = %.9e, f = %.3lf\n", lambda, freq);
 
-    fprintf(file, "%.9lf ", freq);
+		// Deflate matrix
+		for(size_t i = 0; i < A->m; i++)
+			for(size_t j = 0; j < A->n; j++)
+				A->a[i][j] -= lambda * v[i] * v[j];
 
-    printf("lambda = %.9e, f = %.3lf\n", lambda, freq);
-    // Deflate matrix
-    for(int i = 0; i < A->m; i++)
-      for(int j = 0; j < A->n; j++)
-        A->a[i][j] -= lambda * v[i] * v[j];
+		// Put appropriate BC and plot
+		double* const freq_vector = calloc(m, sizeof(double));
+		size_t iv = 0;
+		size_t i_bnd = 0; 
+		for(size_t i = 0; i < m/2; i++) {
+			if(i_bnd < n_boundary_nodes && i == boundary_nodes[i_bnd]) {
+				i_bnd++;
+				continue;
+			}
+			freq_vector[2 * i + 0]   = v[2 * iv + 0];
+			freq_vector[2 * i + 1] = v[2 * iv + 1];
+			iv++;
+		}
+		visualize_in_gmsh(freq_vector, m / 2);
+	}
 
-    // Put appropriate BC and plot
-    double * vall = calloc(K->m, sizeof(double));
-    int iv = 0, i_bnd = 0; 
-    for(int i = 0; i < K->m/2; i++) {
-      if(i_bnd < n_boundary_nodes && i == boundary_nodes[i_bnd]) {
-        i_bnd++;
-        continue;
-      }
-      vall[2*(i)]   = v[2*iv];
-      vall[2*(i)+1] = v[2*iv+1];
-      iv++;
-    }
-    visualize_in_gmsh(vall, K->m/2);
-  }
+	if (file != NULL)
+  		fclose(file);
 
-  fclose(file);
+  	gmshFltkRun(&ierr);
 
-  gmshFltkRun(&ierr);
-
-  // free_matrix (K);
-  // free_matrix (M);
-  // free_matrix (K_new);
-  // free_matrix (M_new);
-  // free(boundary_nodes);
+	// Don't need to free the os is faster...
+	// free_matrix(K_new);
+	// free_matrix(M_new);
+	// free(boundary_nodes);
 
   return 0;
 }
