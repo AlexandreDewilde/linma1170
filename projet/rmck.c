@@ -93,14 +93,14 @@ int pop_queue(Queue *q) {
     return val;
 }
 
-vector **g;
+static vector **g;
 
-int compare_adjency_list(const void * g1, const void * g2) {
+static int compare_adjency_list(const void * g1, const void * g2) {
     int idx1 = *((int*) g1); int idx2 = *((int*) g2);
     return g[idx1]->n - g[idx2]->n;
 }
 
-int compare_int(const void *int1, const void *int2) {
+static int compare_int(const void *int1, const void *int2) {
     int n1 = *((const int*) int1); int n2 = *((const int*) int2);    
     return n1 - n2;
 }
@@ -161,8 +161,8 @@ void rmck(int *perm, Triplet *triplets, int n_triplets, int n_nodes) {
     free(visited);
 }
 
-int *global_degrees;
-int comp_degrees(const void * g1, const void * g2) {
+static int *global_degrees;
+static int comp_degrees(const void * g1, const void * g2) {
     int x = *((int*)g1); int y = *((int*)g2);
     return global_degrees[x] - global_degrees[y];
 }

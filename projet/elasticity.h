@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _FEM_MATRICES_H_
 #define _FEM_MATRICES_H_
 

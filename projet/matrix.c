@@ -52,8 +52,7 @@ typedef struct {
 } Node;
 
 // Comparateur
-int cmp(const void * a, const void * b) {
-	
+static int cmp(const void * a, const void * b) {
 	Node * na = (Node *) a;
 	Node * nb = (Node *) b;
 	if (na->x > nb->x) return 1;

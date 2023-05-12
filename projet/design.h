@@ -1,3 +1,4 @@
+#pragma once
 #ifndef DESIGN_H // le header guard
 #define DESIGN_H 
 

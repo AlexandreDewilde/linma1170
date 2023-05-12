@@ -1,3 +1,4 @@
+#pragma once
 #ifndef MATRIX_H // le header guard
 #define MATRIX_H 
 #include <math.h>

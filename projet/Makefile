@@ -32,6 +32,9 @@ OBJS := elasticity.o lu.o matrix.o design.o eigen.o rmck.o
 # Règle de compilation
 all: $(PROG)
 
+python_functions: $(OBJS) python_functions.o
+	$(CC) -fPIC $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3 -shared -o python_functions.so
+
 optimize: $(OBJS) optimize.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 

@@ -1,4 +1,4 @@
-
+#pragma once
 #include <string.h>
 #include <stdlib.h>
 #ifndef RMCK_H

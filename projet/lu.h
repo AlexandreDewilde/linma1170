@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LU_H // le header guard
 #define LU_H
 
