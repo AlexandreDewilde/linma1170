@@ -1,4 +1,5 @@
 #include "elasticity.h"
+#include "eigen.h"
 
 static void p1_stifness_matrix (double const dphi[6], double const h[3][3] ,double const det, double S[6][6]){
   	double const d1dx = dphi[0];
@@ -241,4 +242,24 @@ void visualize_in_gmsh(double* SOL, int n_nodes){
 	gmshViewOptionSetNumber(view_tag, "DisplacementFactor", 0.1, &ierr);
 	free(sol_3D);
 	free(nodeTags);
+}
+
+Matrix* compute_matrix_km(double const E, double const nu, double const rho)  {
+	Matrix* K;
+	Matrix* M;
+	double* coord;
+	size_t* boundary_nodes;
+	size_t n_boundary_nodes;
+
+	assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
+
+	// Remove lines from matrix that are boundary
+	Matrix* K_new;
+	Matrix* M_new;
+	remove_bnd_lines(K, M, boundary_nodes, n_boundary_nodes, &K_new, &M_new, NULL);
+	free_matrix(K); free_matrix(M); K = M = NULL;
+	
+	inverse_matrix_permute(K_new, M_new);
+	free_matrix(K_new); K_new = NULL;
+	return M_new;
 }

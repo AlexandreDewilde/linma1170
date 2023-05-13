@@ -1,32 +1,26 @@
-import subprocess
 import scipy
 import math
-from ctypes import *
-lib = "./python_functions.so"
-functions = CDLL(lib)
 
+from tuning_fork import get_k_freq_tuning_fork
 
-r1,r2,e,l = 6e-3, 11e-3, 38e-3, 82e-3
-r3,r4,l2 = 6e-3, 11e-3, 82e-3
-d1 = r1
-d2 = r2
+def area_tuning_fork(r1, r2, e, l):
+    return (r2 - r1) * e + 2 * (r2 - r1) * l + math.pi * (r2 ** 2 - r1 ** 2) / 4
 
-functions.get_k_freq_tuning_fork.restype = POINTER(c_double)
-res = ((functions.get_k_freq_tuning_fork(2, c_double(r1), c_double(r2), c_double(e), c_double(l))))
-print(res[0], res[1])
+def simple_mae(pred, target):
+    return abs(pred - target)
 
-def area(r1, r2, e, l):
-    return (r2 - r1) * e + 2 * (r2 - r1) * l + math.pi * (r2**2 - r1**2) / 4
+def mae(preds, targets):
+    return sum(abs(pred - target) for pred, target in zip(preds, targets))
 
-target_area = area(r1,r2,e,l)
-def con(x):
-    return abs(area(r1, r2, x[0], x[1]) - target_area)
+def simple_loss_pred_g6(r1, r2, e, l):
+    res = get_k_freq_tuning_fork(1, r1, r2, e, l)
+    return simple_mae(res[0], 1567.98)
 
-# print(e, d1, d2, r1, r2, l, l2)
-# print(r1, r2, e, l)
-# res = scipy.optimize.minimize(lambda x: f4(*x), [d1, d2, r1, r2, l, l2], bounds=[(1e-3, 1.), (1e-3, 1.), (5e-3, 1.), (5e-3, 1.), (1e-3, 1.), (1e-3, 1.)], options={"disp":True}, method="Nelder-mead")
+def minimize_simple_g6(r1, r2, e, l):
+    res = scipy.optimize.minimize(lambda x: simple_loss_pred_g6(r1, *x), [r2, e, l], bounds=[(1e-3, 1.), (1e-3, 1.), (1e-3, 1.)], method="Nelder-Mead")
+    return [r1] + list(res.x), res.fun
 
-# res = scipy.optimize.minimize(lambda x: f4(*x), [r2, e, l], bounds=[(7*1e-3, 1.), (1e-4, 1.), (1e-4, 1.)], options={"disp":True}, method="Nelder-Mead")
-# d1, r1, l = res.x
-# print(res.x)
-# print(f"{e} {d1} {d2} {r1} {r2} {l} {l2}")
+if __name__ == "__main__":
+    r1, r2, e, l = 6e-3, 11e-3, 38e-3, 82e-3
+    res, error = minimize_simple_g6(r1, r2, e, l)
+    print(f"Dimension pour un simple diapason produisant la note G6, r1={res[0]}, r2={res[1]}, e={res[2]}, l={res[3]}, with an absolute error of {error}")
