@@ -35,20 +35,21 @@ all: $(PROG)
 python_functions: $(OBJS) python_functions.o
 	$(CC) -fPIC $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3 -shared -o python_functions.so
 
-optimize: $(OBJS) optimize.o
-	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
-
-execute: $(OBJS) execute.o
-	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
-
-execute_2_layer: $(OBJS) execute_2_layer.o
+gradient_descent: $(OBJS) gradient_descent.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
 bisect: $(OBJS) bisect.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
+constant_area_bisect: $(OBJS) constant_area_bisect.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
 ternary_search: $(OBJS) ternary_search.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
+multi_layer: $(OBJS) multi_layer.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
 
 # Règle de compilation : on produit un .o à partir d'un .c
 # on fournit les flags de compilation CFLAGS et les chemins include INC_DIR
@@ -66,4 +67,5 @@ $(PROG): $(OBJS) project.o
 clean:
 	rm *.o -f
 	rm $(PROG) $(OBJS) -f
-	rm -f project.o project optimize optimize.o bisect execute ternary_search execute_2_layer
+	rm *.so -f
+	rm -f project.o project bisect execute ternary_search execute_2_layer

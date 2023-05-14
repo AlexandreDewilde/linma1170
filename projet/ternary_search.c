@@ -5,38 +5,15 @@
 #include "matrix.h"
 #include "elasticity.h"
 #include "math.h"
-#include "lu.h"
 #include "design.h"
 #include "eigen.h"
-#include "rmck.h"
-#include <lapacke.h> 
-#include <cblas.h>
 
-#define MESHSIZE 0.3
+#define MESHSIZE 0.2
 #define FREQ 1567.98
 
 double E = 0.7e11;  // Young's modulus for Aluminum
 double nu = 0.3;    // Poisson coefficient
-double rho = 3000;  //
-
-Matrix *compute_matrix(double r1, double r2, double e, double l)  {
-	Matrix *K, *M;
-	double *coord; size_t *boundary_nodes; size_t n_boundary_nodes;
-
-	designTuningFork(r1, r2, e, l, MESHSIZE, NULL);
-	assemble_system(&K, &M, &coord, &boundary_nodes, &n_boundary_nodes, E, nu, rho);
-
-	// Remove lines from matrix that are boundary
-	Matrix *K_new;
-	Matrix *M_new;
-	remove_bnd_lines(K, M, boundary_nodes, n_boundary_nodes, &K_new, &M_new, NULL);
-	free_matrix(K); free_matrix(M); K = M = NULL;
-	
-	inverse_matrix_permute(K_new, M_new);
-	Matrix *A = M_new;
-	free_matrix(K_new); K_new = NULL;
-	return A;
-}
+double rho = 3000;
 
 int main (int argc, char *argv[]) {
   // Initialize Gmsh and create geometry
@@ -45,41 +22,37 @@ int main (int argc, char *argv[]) {
 
   double l = 10e-3;
   double r = 1e-1;
-  while (r - l > 1e-15) {
+  size_t it = 0;
+  while (r - l > 1e-17) {
 	double m1 = l + (r - l) / 3;
     double m2 = r - (r - l) / 3;
     double mids[2] = {m1, m2};
-	double freqs[2][4];
+	double freqs[2];
     for (int it = 0; it < 2; it++) {
-        Matrix* A = compute_matrix(6e-3, 11e-3, 38e-3, mids[it]);
+        designTuningForkSymmetric(6e-3, 11e-3, 38e-3, mids[it], MESHSIZE, NULL);
+        Matrix* A = compute_matrix_km(E, nu, rho);
 
         // Power iteration + deflation to find k largest eigenvalues
-        double *v = malloc(A->m * sizeof(double));
-        double lambda, freq;
-        for(int ki = 0; ki < 4; ki++) {
-            lambda = power_iteration(A, v);
-            freq = 1./(2*M_PI*sqrt(lambda));
-            freqs[it][ki] = freq;
-            
-            // Deflate matrix
-            for(int i = 0; i < A->m; i++)
-                for(int j = 0; j < A->n; j++)
-                    A->a[i][j] -= lambda * v[i] * v[j];
-        }
+        double* v = malloc(A->m * sizeof(double));
+        double lambda = power_iteration(A, v);
+        freqs[it] = 1. / (2 * M_PI * sqrt(lambda));
+        
         free(v);
         free_matrix(A);
     }
-    printf("f1 = %.3lf, f2 = %.3lf\n", freqs[0][1], freqs[0][3]);
-    int d1 = freqs[0][3] / FREQ;
-    int d2 = freqs[1][3] / FREQ;
-    double f1 = (freqs[0][1] - FREQ) * (freqs[0][1] - FREQ);
-    double f2 = (freqs[1][1] - FREQ) * (freqs[1][1] - FREQ);
+    double f1 = (freqs[0] - FREQ) * (freqs[0] - FREQ);
+    double f2 = (freqs[1] - FREQ) * (freqs[1] - FREQ);
+    if (fabs(freqs[0] - FREQ) < 1.) {
+        printf("Convergence : %ld\n", it + 1);
+        break;
+    }
     if (f1 > f2)
         l = mids[0];
     else
         r = mids[1];
+    it++;
   }
-  printf("%lf\n", l);
+  printf("Those parameters will produce the desired frequency r1=6e-3, r2=11e-3, e=28e-3, l=%lf\n", l);
 
   return 0;
 }

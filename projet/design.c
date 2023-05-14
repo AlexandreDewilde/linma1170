@@ -164,7 +164,7 @@ void designTuningForkSymmetric(double const r1, double const r2, double const e,
 	gmshModelMeshGenerate(2, &ierr);
 }
 
-int designRec(size_t current, size_t idx, double x, double y, double const e, double const* b, double const* d, double const* h, double const* l, size_t const n, double const meshSize) {
+static int designRec(size_t current, size_t idx, double x, double y, double const e, double const* b, double const* d, double const* h, double const* l, size_t const n, double const meshSize) {
 	int ierr;
 	if (current == n - 1) {
 		gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
@@ -206,29 +206,27 @@ int designRec(size_t current, size_t idx, double x, double y, double const e, do
 	return idx;
 }
 
-void designTuningForkNLayer(double const e, double const we, double const* d, double const* dec, double const* h, double const* l, size_t n, double meshSizeFactor, char const* filename) {
+void designTuningForkNLayer(double const lh, double const wh, double const* d, double const* dec, double const* h, double const* l, size_t n, double meshSizeFactor, char const* filename) {
 	int ierr;
 	gmshClear(&ierr);
-	double meshSize = d[0] * meshSizeFactor;
 
 	double b[n];
 	b[n - 1] = 0.;
 	for (int i = n - 1; i > 0; i--)
-		b[i - 1] = d[i] + (n - i) * b[i];
+		b[i - 1] = d[i] + dec[i] + (n - i) * b[i];
 
-	for (size_t i = 0; i < n; i++)
-		b[i] += dec[i];
+	double meshSize = d[0] * meshSizeFactor;
 
 	size_t idx = 0;
 	double x = 0.;
 	double y = 0.;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
-	x += we;
+	x += wh;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
-	y += e;
+	y += lh;
 	// gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
-	idx = designRec(0, idx, x, y, we, b, d, h, l, n, meshSize);
-	x -= we;
+	idx = designRec(0, idx, x, y, wh, b, d, h, l, n, meshSize);
+	x -= wh;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
 	for (size_t i = 0; i < idx; i++)
 		gmshModelOccAddLine(i, (i + 1) % idx, i, &ierr);
@@ -258,25 +256,23 @@ void designTuningForkNLayer(double const e, double const we, double const* d, do
 		gmshWrite(filename, &ierr);
 }
 
-void designTuningForkSymmetricNLayer(double const e, double const we, double const* d, double const* dec, double const* h, double const* l, size_t n, double const meshSizeFactor, char const* filename) {
+void designTuningForkSymmetricNLayer(double const lh, double const wh, double const* d, double const* dec, double const* h, double const* l, size_t n, double const meshSizeFactor, char const* filename) {
 	int ierr;
 	gmshClear(&ierr);
-	double meshSize = d[0] * meshSizeFactor;
 
 	double b[n];
 	b[n - 1] = 0.;
 	for (int i = n - 1; i > 0; i--) 
-		b[i - 1] = d[i] + (n - i) * b[i];
-	for (size_t i = 0; i < n; i++)
-		b[i] += dec[i];
+		b[i - 1] = d[i] + dec[i] + (n - i) * b[i];
 
+	double meshSize = d[0] * meshSizeFactor;
 	size_t idx = 0;
 	double x = 0.;
 	double y = 0.;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
-	x += we / 2;
+	x += wh / 2;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
-	y += e;
+	y += lh;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
 	x += d[0] + b[0];
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
@@ -287,7 +283,7 @@ void designTuningForkSymmetricNLayer(double const e, double const we, double con
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
 	y -= l[0];
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
-	x -= b[0] + we / 2;
+	x -= b[0] + wh / 2;
 	gmshModelOccAddPoint(x, y, 0, meshSize, idx++, &ierr);
 	for (size_t i = 0; i < idx; i++)
 		gmshModelOccAddLine(i, (i + 1) % idx, i, &ierr);

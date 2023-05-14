@@ -33,7 +33,7 @@ int main (int argc, char *argv[]) {
 	// Number of vibration modes to find
 	size_t const k = atoi(argv[1]);
 
-	// Define physical constants
+	// Define physical constantssss
 	double const E = 0.7e11;  // Young's modulus for Aluminum
 	double const nu = 0.3;    // Poisson coefficient
 	double const rho = 3000;  // Density of Aluminum
@@ -41,13 +41,9 @@ int main (int argc, char *argv[]) {
 	// Initialize Gmsh and create geometry
 	int ierr;
 	gmshInitialize(argc, argv, 0, 0, &ierr);
-
-	// Create geometry
-	double const d[6] = {6e-3, 11e-3, 11e-3, 11e-3, 11e-3, 11e-3};
-	double dec[6] = {0, 0, 0, 0, 0, 0};
-	double const h[6] = {6e-3, 11e-3, 11e-3, 12e-3, 12e-3, 12e-3};
-	double const l[6] = {38e-3, 82e-3, 82e-3, 82e-3, 82e-3, 82e-3};
-	designTuningForkSymmetricNLayer(18e-3, 6e-3, d, dec, h, l, 2, 0.3, NULL);
+ 
+	// Create geometry.
+	designTuningFork(0.006000, 0.011000, 0.009619, 0.038512, 0.2, NULL);
   
 	// Assemble the 2 matrices of the linear elasticity problem: 
 	// M is the mass matrix && K is the stiffness matrix
@@ -79,7 +75,6 @@ int main (int argc, char *argv[]) {
 	double* const v = malloc(A->m * sizeof(double));
 	double lambda;
 	double freq;
-
 	FILE * file = NULL;
 	if (argc >= 3)
 		file = fopen(argv[2], "w"); // open file to write frequencies
