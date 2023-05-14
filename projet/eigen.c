@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
+#include <cblas.h>
 #include "matrix.h"
 #include "eigen.h"
 
@@ -67,7 +68,7 @@ double power_iteration(Matrix *A, double *v) {
   double Av[n];
   for (int i=0; i<n; i++) v[i] = 0;
   v[0] = v[1] = 1;
-  normalize(v,n);
+  cblas_dscal(n, 1 / sqrt(2), v, 1);
 
   double lambda = 1, lambda_prev, diff;
   double rtol = 1e-9; // relative tolerance on lambda
@@ -75,12 +76,18 @@ double power_iteration(Matrix *A, double *v) {
   for(int it = 0; it < 1e4; it++) {
     lambda_prev = lambda;
     // printf("\n===== Iteration %d =====\n", it+1);
-    matrix_times_vector(A, v, Av);
-    lambda = inner(v, Av, n);
+    // matrix_times_vector(A, v, Av);
+    cblas_dgemv(CblasRowMajor, CblasNoTrans, A->m, A->n, 1., A->data, A->n, v, 1, 0., Av, 1);
+    // lambda = inner(v, Av, n);
+    lambda = cblas_ddot(n, v, 1, Av, 1);
     // printf("λ = %.9e\n", lambda);
     diff = fabs((lambda-lambda_prev) / lambda_prev);
     for(int i = 0; i < n; i++) v[i] = Av[i];
-    normalize(v, n);
+
+
+    // normalize(v, n);
+    double norm = cblas_dnrm2(n, v, 1);
+    cblas_dscal(n, 1 / norm, v, 1);
     if(diff < rtol) break;
   }
 

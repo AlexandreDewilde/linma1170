@@ -6,6 +6,7 @@
 #include "math.h"
 #include "design.h"
 #include "eigen.h"
+#include <cblas.h>
 
 #define max(a,b) \
    	({ __typeof__ (a) _a = (a); \
@@ -94,9 +95,10 @@ int main (int argc, char *argv[]) {
 		printf("lambda = %.9e, f = %.3lf\n", lambda, freq);
 
 		// Deflate matrix
-		for(size_t i = 0; i < A->m; i++)
-			for(size_t j = 0; j < A->n; j++)
-				A->a[i][j] -= lambda * v[i] * v[j];
+		cblas_dger(CblasRowMajor, A->m, A->m, -lambda, v, 1, v, 1, A->data, A->m);
+		// for(size_t i = 0; i < A->m; i++)
+			// for(size_t j = 0; j < A->n; j++)
+				// A->a[i][j] -= lambda * v[i] * v[j];
 
 		// Put appropriate BC and plot
 		size_t iv = 0;

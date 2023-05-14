@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "lu.h"
-#include <lapacke.h>
 #include <cblas.h>
 
 int lu(Matrix* A) {
@@ -68,7 +67,7 @@ int solve_band(BandMatrix * LU, double * y) {
 			y[k] -= LU->a[k][i] * y[i];
 		}
 	}
-	// cblas_dtbsv(CblasRowMajor, CblasLower, CblasNoTrans, CblasUnit, LU->m, LU->k, LU->data, 2*LU->k+1, y, 1);
+	// cblas_dtbsv(CblasRowMajor, CblasLower, CblasNoTrans, CblasUnit, LU->m, LU->k, LU->data, 2*LU->k + 1, y, 1);
 	cblas_dtbsv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit, LU->m, LU->k, LU->data, 2*LU->k+1, y, 1);
 
 	// for (int k = LU->m - 1; k >= 0; k--) {

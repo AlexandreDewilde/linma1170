@@ -7,6 +7,7 @@
 #include "math.h"
 #include "design.h"
 #include "eigen.h"
+#include <cblas.h>
 
 static double E = 0.7e11;  // Young's modulus for Aluminum
 static double nu = 0.3;    // Poisson coefficient
@@ -33,10 +34,11 @@ double* get_k_freq_tuning_fork(size_t const k, double const r1, double const r2,
         double lambda = power_iteration(A, v);
         freqs[ki] = 1. / (2 * M_PI * sqrt(lambda));
 
+        cblas_dger(CblasRowMajor, A->m, A->m, -lambda, v, 1, v, 1, A->data, A->m);
         // Deflate matrix
-        for(int i = 0; i < A->m; i++)
-            for(int j = 0; j < A->n; j++)
-                A->a[i][j] -= lambda * v[i] * v[j];
+        // for(int i = 0; i < A->m; i++)
+            // for(int j = 0; j < A->n; j++)
+                // A->a[i][j] -= lambda * v[i] * v[j];
     }
 
     free_matrix(A);

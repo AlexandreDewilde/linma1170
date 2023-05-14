@@ -20,7 +20,7 @@ LIB_DIR := -L $(GMSH_DIR)/lib # specify library directories for compilation
 LDFLAGS := -Wl,-rpath,$(GMSH_DIR)/lib
 
 # On indique au compilateur de linker la librairie Gmsh
-LDLIBS := -lgmsh -llapack -lm -lcblas -llapacke
+LDLIBS := -lgmsh -llapack -lm -lcblas
 
 # Nom du programme à compiler
 PROG := project

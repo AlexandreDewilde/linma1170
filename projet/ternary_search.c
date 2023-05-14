@@ -32,7 +32,7 @@ int main (int argc, char *argv[]) {
         designTuningForkSymmetric(6e-3, 11e-3, 38e-3, mids[it], MESHSIZE, NULL);
         Matrix* A = compute_matrix_km(E, nu, rho);
 
-        // Power iteration + deflation to find k largest eigenvalues
+        // Power iteration
         double* v = malloc(A->m * sizeof(double));
         double lambda = power_iteration(A, v);
         freqs[it] = 1. / (2 * M_PI * sqrt(lambda));

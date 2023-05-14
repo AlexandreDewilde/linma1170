@@ -27,6 +27,9 @@ D'abord il faut les requirements et build les bindings c->python
 
 ```pip install scipy && make python_functions```
 
+On peut lancer les optimisations avec
+
+```python optimize.py```
 
 ### Visualisation des résultats
 
@@ -36,12 +39,11 @@ modifié le fichier project.c avec vos valeurs et faites
 
 où k représente le nombre de modes à calculer et file le fichier ou sont écrit les fréquences
 
-pour les multicouches
+## Diapason multi-couches
 
 ```make multi_layer && ./multi_layer k f```
 
-## Diapason multi-couches
-
+L'optimisation se trouver dans le fichier python.
 
 ## Contraintes sur la taille
 

@@ -49,13 +49,12 @@ def minimize_g6(lh, wh, ws, btwhs, h, l):
 
 if __name__ == "__main__":
     r1, r2, e, l = 6e-3, 11e-3, 38e-3, 82e-3
-    # res, error = minimize_simple_g6(r1, r2, e, l)
-    # print(f"Dimension pour un simple diapason produisant la note G6, r1={res[0]}, r2={res[1]}, e={res[2]}, l={res[3]}, with an absolute error of {error}")
+    res, error = minimize_simple_g6(r1, r2, e, l)
+    print(f"Dimension pour un simple diapason produisant la note G6, r1={res[0]}, r2={res[1]}, e={res[2]}, l={res[3]}, with an absolute error of {error}")
     
     # area = 1e-2
     res, error = minimize_simple_g6_constant_area(5e-4, r1, r2, e, l)
-    print(area_tuning_fork(*res), error)
-    print(get_k_freq_tuning_fork(1, *res, 0.5))
-    # print(f"For a constant area {area}; the parameters are r1={res[0]}, r2={res[1]}, e={res[2]}, l={res[3]}, abs error is {error}")
-    # res, error = minimize_g6(11e-3, 6e-3, [38e-3, 38e-3], [0,0], [32e-3, 32e-3], [82e-3, 82e-3])
-    # print(res, error)
+    print(f"For a constant area 5e-4; the parameters are r1={res[0]}, r2={res[1]}, e={res[2]}, l={res[3]}, abs error is {error}")
+    
+    res, error = minimize_g6(11e-3, 6e-3, [38e-3, 38e-3], [0,0], [32e-3, 32e-3], [82e-3, 82e-3])
+    print(f"For a 2 layer tf : {res} with an absolute error of {error}")

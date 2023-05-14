@@ -6,6 +6,7 @@
 #include "math.h"
 #include "design.h"
 #include "eigen.h"
+#include <cblas.h>
 
 #define max(a,b) \
    	({ __typeof__ (a) _a = (a); \
@@ -43,7 +44,7 @@ int main (int argc, char *argv[]) {
 	gmshInitialize(argc, argv, 0, 0, &ierr);
  
 	// Create geometry.
-	designTuningFork(0.006000, 0.011000, 0.009619, 0.038512, 0.2, NULL);
+	designTuningForkSymmetric(0.0036597497, 0.0221188348, 0.0391091060, 0.0775741736, 0.1, NULL);
   
 	// Assemble the 2 matrices of the linear elasticity problem: 
 	// M is the mass matrix && K is the stiffness matrix
@@ -89,10 +90,11 @@ int main (int argc, char *argv[]) {
 
 		printf("lambda = %.9e, f = %.3lf\n", lambda, freq);
 
+		cblas_dger(CblasRowMajor, A->m, A->m, -lambda, v, 1, v, 1, A->data, A->m);
 		// Deflate matrix
-		for(size_t i = 0; i < A->m; i++)
-			for(size_t j = 0; j < A->n; j++)
-				A->a[i][j] -= lambda * v[i] * v[j];
+		// for(size_t i = 0; i < A->m; i++)
+			// for(size_t j = 0; j < A->n; j++)
+				// A->a[i][j] -= lambda * v[i] * v[j];
 
 		// Put appropriate BC and plot
 		size_t iv = 0;
@@ -112,7 +114,7 @@ int main (int argc, char *argv[]) {
 	if (file != NULL)
   		fclose(file);
 
-  	gmshFltkRun(&ierr);
+  	// gmshFltkRun(&ierr);
 
 	// Don't need to free the os is faster...
 	// free(freq_vector);
