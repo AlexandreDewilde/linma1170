@@ -41,6 +41,9 @@ gradient_descent: $(OBJS) gradient_descent.o
 bisect: $(OBJS) bisect.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
+bisect_n_layer: $(OBJS) bisect_n_layer.o
+	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
+
 constant_area_bisect: $(OBJS) constant_area_bisect.o
 	$(CC) -g -o $@ $(LIB_DIR) $(LDLIBS) $(LDFLAGS) $^ -O3
 
@@ -68,4 +71,4 @@ clean:
 	rm *.o -f
 	rm $(PROG) $(OBJS) -f
 	rm *.so -f
-	rm -f project.o project bisect execute ternary_search execute_2_layer
+	rm -f project.o project bisect ternary_search bisect_n_layer multi_layer gradient_descent

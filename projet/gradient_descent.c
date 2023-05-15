@@ -71,6 +71,6 @@ int main (int argc, char *argv[]) {
         // printf("%lf, %lf, %lf, %lf\n", gradient[0], gradient[1], gradient[2], gradient[3]);
         // printf("%lf, %lf, %lf, %lf\n", params[0], params[1], params[2], params[3]);
     }
-    printf("%.10f, %.10f, %.10lf, %.10lf\n", params[0], params[1], params[2], params[3]);
+    printf("%.20f, %.20f, %.20lf, %.20lf\n", params[0], params[1], params[2], params[3]);
     return 0;
 }

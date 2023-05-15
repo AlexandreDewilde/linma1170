@@ -45,9 +45,9 @@ int main (int argc, char *argv[]) {
  
 	// Create geometry.
 	double const d[6] = {0.05929252977121609, 0.021409268854274743, 11e-3, 11e-3, 11e-3, 11e-3};
-	double dec[6] = {.0, 0.0, 0, 0, 0, 0};
+	double const dec[6] = {.0, 0.0, 0, 0, 0, 0};
 	double const h[6] = {0.06581162483843764, 0.021227934873379272, 11e-3, 12e-3, 12e-3, 12e-3};
-	double const l[6] = {0.042379960230197806, 0.05744559880222302, 50e-3, 82e-3, 82e-3, 82e-3};
+	double const l[6] = {0.040410, 0.056977, 50e-3, 82e-3, 82e-3, 82e-3};
 	designTuningForkNLayer(0.06595566225750074, 0.009164195816166532, d, dec, h, l, 2, 0.3, NULL);
   
 	// Assemble the 2 matrices of the linear elasticity problem: 
@@ -118,7 +118,7 @@ int main (int argc, char *argv[]) {
 	if (file != NULL)
   		fclose(file);
 
-  	gmshFltkRun(&ierr);
+  	// gmshFltkRun(&ierr);
 
 	// Don't need to free the os is faster...
 	// free(freq_vector);

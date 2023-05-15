@@ -2,7 +2,7 @@
 
 | Bisection | Ternary Search | Descente de gradient | 2 Couches mode 1 | 2 couches mode 2 |
 | --------- | -------------- | -------------------- | --------- | ------ |
-| ![bisec anim](bisect.gif) | ![ts anim](ternary_search.gif) | ![gd anim](gradient_descent.gif) | ![2layer anim](2layer.gif) | ![2layer mode2](2layersecond.gif) |
+| ![bisec anim](images/bisect.gif) | ![ts anim](images/ternary_search.gif) | ![gd anim](images/gradient_descent.gif) | ![2layer anim](images/2layer.gif) | ![2layer mode2](images/2layersecond.gif) |
 
 ## Simple dimensionnement
 
@@ -41,11 +41,18 @@ où k représente le nombre de modes à calculer et file le fichier ou sont écr
 
 ## Diapason multi-couches
 
+Il faut modifier les valeurs dans le fichier. On peut faire des diapason de 2 à .... couches.
+
 ```make multi_layer && ./multi_layer k f```
 
 L'optimisation se trouver dans le fichier python.
+
+Pour affiner les résultats avec la bisection, modifier les paramètres dans le fichier et run
+
+```make bisect_n_layer && ./bisect_n_layer -v 0```
 
 ## Contraintes sur la taille
 
 ```make constant_area_bisect && ./constant_area_bisect -v 0```
 
+ou la version python avec la cost function adapté

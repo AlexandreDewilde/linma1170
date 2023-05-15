@@ -44,7 +44,7 @@ int main (int argc, char *argv[]) {
 	gmshInitialize(argc, argv, 0, 0, &ierr);
  
 	// Create geometry.
-	designTuningForkSymmetric(0.0036597497, 0.0221188348, 0.0391091060, 0.0775741736, 0.1, NULL);
+	designTuningFork(0.006000, 0.011000, 0.038000, 0.038652, 0.2, NULL);
   
 	// Assemble the 2 matrices of the linear elasticity problem: 
 	// M is the mass matrix && K is the stiffness matrix
@@ -114,7 +114,7 @@ int main (int argc, char *argv[]) {
 	if (file != NULL)
   		fclose(file);
 
-  	// gmshFltkRun(&ierr);
+  	gmshFltkRun(&ierr);
 
 	// Don't need to free the os is faster...
 	// free(freq_vector);

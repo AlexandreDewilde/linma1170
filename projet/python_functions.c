@@ -59,10 +59,11 @@ double* get_k_freq_tuning_fork_n_layer(size_t const k, double const lh, double c
         double lambda = power_iteration(A, v);
         freqs[ki] = 1. / (2 * M_PI * sqrt(lambda));
 
+        cblas_dger(CblasRowMajor, A->m, A->m, -lambda, v, 1, v, 1, A->data, A->m);
         // Deflate matrix
-        for(int i = 0; i < A->m; i++)
-            for(int j = 0; j < A->n; j++)
-                A->a[i][j] -= lambda * v[i] * v[j];
+        // for(int i = 0; i < A->m; i++)
+            // for(int j = 0; j < A->n; j++)
+                // A->a[i][j] -= lambda * v[i] * v[j];
     }
 
     free_matrix(A);
